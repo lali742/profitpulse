@@ -1,0 +1,17 @@
+{
+  "name": "ProfitPulse",
+  "short_name": "ProfitPulse",
+  "description": "Track product spending and profit margins",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0F0F23",
+  "theme_color": "#0F0F23",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236C5CE7'/><text x='50' y='68' text-anchor='middle' font-size='50' fill='white'>₹</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

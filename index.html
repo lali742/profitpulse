@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Track product spending and profit margins with this beautiful mobile calculator app." />
+  <meta name="theme-color" content="#0F0F23" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>ProfitPulse — Spending & Profit Calculator</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header id="app-header">
+    <h1>Profit<span class="accent">Pulse</span></h1>
+    <button id="export-btn" title="Export CSV" aria-label="Export CSV">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main id="app-main">
+
+    <!-- ── VIEW 1: OVERVIEW ── -->
+    <section id="view-overview" class="view active">
+      <!-- Summary Cards -->
+      <div class="summary-grid" id="summary-cards">
+        <div class="summary-card" id="card-revenue">
+          <span class="card-label">Revenue</span>
+          <span class="card-value" id="val-revenue">₹0</span>
+        </div>
+        <div class="summary-card" id="card-cogs">
+          <span class="card-label">COGS</span>
+          <span class="card-value" id="val-cogs">₹0</span>
+        </div>
+        <div class="summary-card highlight-green" id="card-gross">
+          <span class="card-label">Gross Profit</span>
+          <span class="card-value" id="val-gross">₹0</span>
+        </div>
+        <div class="summary-card" id="card-spend">
+          <span class="card-label">Total Spend</span>
+          <span class="card-value" id="val-spend">₹0</span>
+        </div>
+        <div class="summary-card highlight-dynamic" id="card-net">
+          <span class="card-label">Net Profit</span>
+          <span class="card-value" id="val-net">₹0</span>
+        </div>
+        <div class="summary-card highlight-dynamic" id="card-margin">
+          <span class="card-label">Margin %</span>
+          <span class="card-value" id="val-margin">0%</span>
+        </div>
+      </div>
+
+      <!-- Ranked Product Chart -->
+      <div class="chart-section">
+        <h2 class="section-title">Product Ranking</h2>
+        <div class="chart-container" id="product-ranking-chart">
+          <canvas id="canvas-ranking"></canvas>
+          <p class="empty-state" id="ranking-empty">Add products to see rankings</p>
+        </div>
+      </div>
+
+      <!-- Spend by Category -->
+      <div class="chart-section">
+        <h2 class="section-title">Spend by Category</h2>
+        <div class="chart-container" id="category-spend-chart">
+          <canvas id="canvas-category-bars"></canvas>
+          <p class="empty-state" id="category-empty">Add spend items to see breakdown</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW 2: PRODUCTS ── -->
+    <section id="view-products" class="view">
+      <div id="products-list"></div>
+      <button class="fab" id="fab-add-product" aria-label="Add Product">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </section>
+
+    <!-- ── VIEW 3: SPEND ANALYSIS ── -->
+    <section id="view-analysis" class="view">
+      <!-- Category Breakdown -->
+      <div class="chart-section">
+        <h2 class="section-title">Category Breakdown</h2>
+        <div class="chart-container donut-container">
+          <canvas id="canvas-donut"></canvas>
+          <p class="empty-state" id="donut-empty">No spend data yet</p>
+        </div>
+        <div id="category-legend" class="category-legend"></div>
+      </div>
+
+      <!-- Spend by Product -->
+      <div class="chart-section">
+        <h2 class="section-title">Spend by Product</h2>
+        <div class="chart-container" id="spend-by-product-chart">
+          <canvas id="canvas-spend-product"></canvas>
+          <p class="empty-state" id="spend-product-empty">No spend data yet</p>
+        </div>
+      </div>
+
+      <!-- Itemized Spend Table -->
+      <div class="chart-section">
+        <h2 class="section-title">
+          Itemized Spend
+          <div class="table-filters">
+            <select id="filter-category" aria-label="Filter by category">
+              <option value="all">All Categories</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Shipping">Shipping</option>
+              <option value="Packaging">Packaging</option>
+              <option value="Storage">Storage</option>
+              <option value="Other">Other</option>
+            </select>
+            <select id="filter-product" aria-label="Filter by product">
+              <option value="all">All Products</option>
+            </select>
+          </div>
+        </h2>
+        <div class="table-wrapper">
+          <table id="spend-table">
+            <thead>
+              <tr>
+                <th data-sort="product">Product</th>
+                <th data-sort="category">Category</th>
+                <th data-sort="amount">Amount ↕</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody id="spend-table-body"></tbody>
+          </table>
+          <p class="empty-state" id="table-empty">No spend items recorded</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== PRODUCT MODAL ===== -->
+  <div class="modal-overlay" id="modal-product">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-product-title">Add Product</h2>
+        <button class="modal-close" id="modal-product-close" aria-label="Close">✕</button>
+      </div>
+      <form id="form-product">
+        <div class="form-group">
+          <label for="input-product-name">Product Name</label>
+          <input type="text" id="input-product-name" placeholder="e.g. Widget Pro" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-revenue">Revenue (₹)</label>
+            <input type="number" id="input-revenue" placeholder="0" min="0" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label for="input-cogs">COGS (₹)</label>
+            <input type="number" id="input-cogs" placeholder="0" min="0" step="0.01" required />
+          </div>
+        </div>
+        <div class="computed-preview">
+          <span>Gross Profit:</span>
+          <span id="preview-gross" class="computed-value">₹0</span>
+        </div>
+        <input type="hidden" id="input-product-id" />
+        <button type="submit" class="btn-primary" id="btn-save-product">Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== SPEND ITEM MODAL ===== -->
+  <div class="modal-overlay" id="modal-spend">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Spend Item</h2>
+        <button class="modal-close" id="modal-spend-close" aria-label="Close">✕</button>
+      </div>
+      <form id="form-spend">
+        <div class="form-group">
+          <label for="input-spend-category">Category</label>
+          <select id="input-spend-category" required>
+            <option value="" disabled selected>Select category</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Shipping">Shipping</option>
+            <option value="Packaging">Packaging</option>
+            <option value="Storage">Storage</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-spend-amount">Amount (₹)</label>
+          <input type="number" id="input-spend-amount" placeholder="0" min="0.01" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label for="input-spend-note">Note (optional)</label>
+          <input type="text" id="input-spend-note" placeholder="e.g. Facebook ads" />
+        </div>
+        <input type="hidden" id="input-spend-product-id" />
+        <button type="submit" class="btn-primary">Add Spend</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DELETE CONFIRMATION ===== -->
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="modal modal-small">
+      <p id="confirm-message">Are you sure?</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btn-confirm-cancel">Cancel</button>
+        <button class="btn-danger" id="btn-confirm-yes">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" data-view="overview" id="nav-overview">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="nav-btn" data-view="products" id="nav-products">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span>Products</span>
+    </button>
+    <button class="nav-btn" data-view="analysis" id="nav-analysis">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Analysis</span>
+    </button>
+  </nav>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
